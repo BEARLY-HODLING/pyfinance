@@ -120,6 +120,18 @@ pyfinance/
 ├── help_system.py            # Tooltips, onboarding
 ├── error_handling.py         # Error boundaries
 │
+├── # Utility Modules
+├── theme_manager.py          # Centralized color/theme management
+├── formatters.py             # Currency, percent, number formatting
+├── constants.py              # Configuration constants
+├── validation.py             # Input validation utilities
+├── api_utils.py              # API retry logic, rate limiting
+├── html_components.py        # Reusable HTML components
+│
+├── # Tests
+├── test_utils.py             # Unit tests for utilities
+├── test_dividends.py         # Dividend calculation tests
+│
 └── assets/
     └── css/                  # CSS stylesheets
 ```
