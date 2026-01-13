@@ -1,0 +1,25 @@
+# PyFinance Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core Framework
+streamlit>=1.30.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Market Data
+yfinance>=0.2.30
+
+# Visualization
+plotly>=5.17.0
+
+# Optional: AI Assistant (uncomment to enable)
+# openai>=1.0.0
+
+# Optional: Excel Export (uncomment to enable)
+# openpyxl>=3.1.0
+
+# Optional: PDF Export (uncomment to enable)
+# reportlab>=4.0.0
+# weasyprint>=60.0

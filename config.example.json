@@ -1,0 +1,41 @@
+{
+  "yahoo_ticker_map": {
+    "VUSA": "VUSA.L",
+    "VWRL": "VWRL.L",
+    "VUAG": "VUAG.L",
+    "VFEM": "VFEM.L",
+    "FEPG": "FEPG.L",
+    "JEQP": "JEQP.L",
+    "QYLP": "QYLP.L",
+    "YMAP": "YMAP.L"
+  },
+  "category_map": {
+    "VUSA": "growth",
+    "VWRL": "growth",
+    "VUAG": "growth",
+    "VFEM": "growth",
+    "FEPG": "income",
+    "JEQP": "income",
+    "QYLP": "income",
+    "YMAP": "income"
+  },
+  "proxy_yields": {
+    "FEPG.L": 0.23,
+    "JEQP.L": 0.12,
+    "QYLP.L": 0.115,
+    "YMAP.L": 0.19
+  },
+  "category_targets": {
+    "income": 50.0,
+    "growth": 35.0,
+    "speculative": 15.0
+  },
+  "target_allocations": {
+    "VUSA": 15.0,
+    "VWRL": 10.0,
+    "FEPG": 20.0,
+    "JEQP": 15.0
+  },
+  "theme": "dark",
+  "openai_api_key": ""
+}
