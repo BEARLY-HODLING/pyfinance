@@ -202,6 +202,9 @@ from premium_tables import (
     render_dividend_table
 )
 
+# Input validation utilities
+from validation import Validator, DataSanitizer
+
 st.set_page_config(page_title="Freetrade Dashboard", layout="wide", page_icon="📊")
 
 # ============================================================================
@@ -2251,14 +2254,33 @@ def render_watchlist_table(watchlist_df, watchlist, portfolio_tickers=None):
         st.success(f"Removed {len(items_to_remove)} item(s) from watchlist")
         st.rerun()
 
-def validate_ticker(ticker):
-    """Validate that a ticker exists and can be fetched"""
+def validate_ticker(ticker: str) -> bool:
+    """Validate that a ticker exists and can be fetched.
+
+    Performs two-stage validation:
+    1. Format validation (quick, no API call)
+    2. Existence validation (API call to Yahoo Finance)
+
+    Args:
+        ticker: Yahoo Finance ticker symbol
+
+    Returns:
+        True if ticker is valid and has price data
+    """
+    # Stage 1: Format validation (fast, no network)
+    is_valid, error = Validator.validate_ticker(ticker)
+    if not is_valid:
+        logger.debug(f"Ticker format invalid: {ticker} - {error}")
+        return False
+
+    # Stage 2: API validation (slower, requires network)
     try:
         t = yf.Ticker(ticker)
         info = t.info
         price = info.get('regularMarketPrice') or info.get('currentPrice') or info.get('previousClose')
         return price is not None
-    except:
+    except Exception as e:
+        logger.debug(f"Ticker API validation failed: {ticker} - {e}")
         return False
 
 def render_add_to_watchlist(watchlist):
@@ -2896,9 +2918,12 @@ def render_sidebar(all_tickers, isa_m=None, sipp_m=None):
 
                     if st.form_submit_button("Save All Mappings", use_container_width=True, type="primary"):
                         for ft, (y, c) in updates.items():
-                            if y:
-                                yahoo_map[ft] = y
-                            category_map[ft] = c
+                            # Sanitize inputs before saving
+                            sanitized_yahoo = DataSanitizer.sanitize_ticker(y) if y else ""
+                            sanitized_category = DataSanitizer.sanitize_category(c)
+                            if sanitized_yahoo:
+                                yahoo_map[ft] = sanitized_yahoo
+                            category_map[ft] = sanitized_category
                         config['yahoo_ticker_map'] = yahoo_map
                         config['category_map'] = category_map
                         save_config(config)
