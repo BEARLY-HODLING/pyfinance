@@ -501,12 +501,26 @@ SIPP_CSV = max(SIPP_CSV_FILES, key=os.path.getmtime) if SIPP_CSV_FILES else None
 CONFIG_FILENAME = 'config.json'
 
 @st.cache_data(ttl=900)
-def load_csv(filepath):
+def load_csv(filepath: str | None) -> pd.DataFrame | None:
+    """Load a CSV file into a pandas DataFrame.
+
+    Args:
+        filepath: Path to the CSV file
+
+    Returns:
+        DataFrame with CSV contents, or None if file doesn't exist
+    """
     if not filepath or not os.path.exists(filepath):
         return None
     return pd.read_csv(filepath)
 
-def load_config():
+
+def load_config() -> dict:
+    """Load configuration from JSON file.
+
+    Returns:
+        Configuration dictionary with all required keys
+    """
     if os.path.exists(CONFIG_FILENAME):
         with open(CONFIG_FILENAME, 'r') as f:
             config = json.load(f)
@@ -528,7 +542,13 @@ def load_config():
         'openai_api_key': ''
     }
 
-def save_config(c):
+
+def save_config(c: dict) -> None:
+    """Save configuration to JSON file.
+
+    Args:
+        c: Configuration dictionary to save
+    """
     with open(CONFIG_FILENAME, 'w') as f:
         json.dump(c, f, indent=4, sort_keys=True)
 
@@ -543,7 +563,15 @@ target_allocations = config['target_allocations']
 # DATA PROCESSING
 # ============================================================================
 
-def process_transactions(df):
+def process_transactions(df: pd.DataFrame | None) -> tuple[pd.DataFrame | None, pd.DataFrame | None, float]:
+    """Process transaction data from Freetrade CSV export.
+
+    Args:
+        df: Raw DataFrame from CSV file
+
+    Returns:
+        Tuple of (transactions_df, holdings_df, dividend_income)
+    """
     if df is None or df.empty:
         return None, None, 0
     trans = df[df['Type'].isin(['ORDER', 'DIVIDEND', 'INTEREST'])].copy()
@@ -558,7 +586,25 @@ def process_transactions(df):
     div_income = trans[trans['Type'].str.contains('DIVIDEND|INTEREST', na=False)]['Total Amount'].sum()
     return trans, net, div_income
 
-def calculate_dividend_yield(ticker, price, scale, proxy_yields):
+
+def calculate_dividend_yield(
+    ticker: str,
+    price: float,
+    scale: float,
+    proxy_yields: dict[str, float]
+) -> tuple[float, str, int]:
+    """Calculate dividend yield for a ticker.
+
+    Args:
+        ticker: Yahoo Finance ticker symbol
+        price: Current share price
+        scale: Price scaling factor (100 for pence-quoted stocks)
+        proxy_yields: Fallback yields for accumulating ETFs
+
+    Returns:
+        Tuple of (yield_percent, source_type, months_of_data)
+        source_type: 'calculated', 'calculated_limited', 'proxy', 'none', or 'error'
+    """
     try:
         t = yf.Ticker(ticker)
         divs = t.dividends
@@ -575,14 +621,19 @@ def calculate_dividend_yield(ticker, price, scale, proxy_yields):
         months_of_data = len(recent_divs)
         calculated_yield = (ttm_dividends / price * 100) if price else 0
         return (calculated_yield, 'calculated_limited' if months_of_data < 6 and ticker in proxy_yields else 'calculated', months_of_data)
-    except:
+    except Exception:
         return (proxy_yields[ticker] * 100, 'proxy', 0) if ticker in proxy_yields else (0, 'error', 0)
 
 @st.cache_data(ttl=900)
-def fetch_fx_rate():
+def fetch_fx_rate() -> float:
+    """Fetch current GBP/USD exchange rate.
+
+    Returns:
+        Exchange rate (defaults to 1.348 on failure)
+    """
     try:
         return yf.Ticker('GBPUSD=X').info.get('regularMarketPrice') or 1.348
-    except:
+    except Exception:
         return 1.348
 
 def fetch_ticker_data(tk: str, max_retries: int = 2) -> dict | None:
@@ -665,8 +716,15 @@ def fetch_all_tickers(tickers: list[str]) -> tuple[dict, list[str]]:
 # MONTHLY INCOME TRACKING
 # ============================================================================
 
-def get_monthly_dividends(df):
-    """Extract monthly dividend totals from transaction data"""
+def get_monthly_dividends(df: pd.DataFrame | None) -> pd.DataFrame:
+    """Extract monthly dividend totals from transaction data.
+
+    Args:
+        df: Transaction DataFrame with 'Type', 'Timestamp', 'Total Amount' columns
+
+    Returns:
+        DataFrame with 'Month' and 'Total Amount' columns
+    """
     if df is None or df.empty:
         return pd.DataFrame(columns=['Month', 'Total Amount'])
 
@@ -680,8 +738,20 @@ def get_monthly_dividends(df):
     monthly['Month'] = monthly['Month'].astype(str)
     return monthly
 
-def get_combined_monthly_dividends(isa_df, sipp_df):
-    """Combine ISA + SIPP dividends for overview chart"""
+
+def get_combined_monthly_dividends(
+    isa_df: pd.DataFrame | None,
+    sipp_df: pd.DataFrame | None
+) -> pd.DataFrame:
+    """Combine ISA + SIPP dividends for overview chart.
+
+    Args:
+        isa_df: ISA transaction DataFrame
+        sipp_df: SIPP transaction DataFrame
+
+    Returns:
+        DataFrame with 'Month', 'ISA', 'SIPP', 'Total' columns
+    """
     isa_divs = get_monthly_dividends(isa_df)
     sipp_divs = get_monthly_dividends(sipp_df)
 
