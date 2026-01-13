@@ -36,12 +36,7 @@ try:
 except ImportError:
     WEASYPRINT_AVAILABLE = False
 
-import calendar
 from collections import defaultdict
-import uuid
-import math
-import time
-import functools
 import traceback
 import logging
 
@@ -587,7 +582,25 @@ def fetch_fx_rate():
     except:
         return 1.348
 
-def fetch_ticker_data(tk, max_retries=2):
+def fetch_ticker_data(tk: str, max_retries: int = 2) -> dict | None:
+    """Fetch ticker data from Yahoo Finance with retry logic.
+
+    Args:
+        tk: Yahoo Finance ticker symbol (e.g., 'VUSA.L')
+        max_retries: Number of retry attempts on failure
+
+    Returns:
+        Dictionary with ticker data or None on failure:
+        - ticker: Symbol
+        - price: Current price (adjusted for pence/pounds)
+        - currency: Currency code
+        - scale: Scaling factor applied
+        - vol: Annualized volatility
+        - dd: Maximum drawdown
+        - beta: Market beta
+        - hist: Price history Series
+        - info: Full ticker info dict
+    """
     for attempt in range(max_retries):
         try:
             t = yf.Ticker(tk)
@@ -624,7 +637,15 @@ def fetch_ticker_data(tk, max_retries=2):
     return None
 
 @st.cache_data(ttl=900)
-def fetch_all_tickers(tickers):
+def fetch_all_tickers(tickers: list[str]) -> tuple[dict, list[str]]:
+    """Fetch data for multiple tickers in parallel.
+
+    Args:
+        tickers: List of Yahoo Finance ticker symbols
+
+    Returns:
+        Tuple of (results dict, failed tickers list)
+    """
     results, failed = {}, []
     with ThreadPoolExecutor(max_workers=10) as executor:
         future_to_ticker = {executor.submit(fetch_ticker_data, tk): tk for tk in tickers}
@@ -1411,7 +1432,8 @@ def render_rebalancing_tab(isa_metrics, sipp_metrics, isa_df, sipp_df):
                     return 'background-color: rgba(231, 76, 60, 0.3)'
                 return ''
 
-            styled_df = category_results.style.applymap(color_action, subset=['Action'])
+            # Use map instead of deprecated applymap (pandas 2.1+)
+            styled_df = category_results.style.map(color_action, subset=['Action'])
             st.dataframe(styled_df, use_container_width=True, hide_index=True)
 
             # Bar chart comparison - use premium chart
@@ -1460,7 +1482,8 @@ def render_rebalancing_tab(isa_metrics, sipp_metrics, isa_df, sipp_df):
                     return 'background-color: rgba(231, 76, 60, 0.3)'
                 return ''
 
-            styled_holdings = holding_results.style.applymap(color_holding_action, subset=['Action'])
+            # Use map instead of deprecated applymap (pandas 2.1+)
+            styled_holdings = holding_results.style.map(color_holding_action, subset=['Action'])
             st.dataframe(styled_holdings, use_container_width=True, hide_index=True)
     else:
         st.info("ℹ️ No per-holding targets set. Configure targets in the sidebar.")

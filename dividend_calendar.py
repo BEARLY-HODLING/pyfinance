@@ -725,9 +725,10 @@ def render_upcoming_payments(predictions_df):
     display_df.columns = ['Ticker', 'Expected Date', 'Est. Amount', 'Confidence', 'Frequency']
     display_df['Expected Date'] = display_df['Expected Date'].dt.strftime('%Y-%m-%d')
 
+    # Use map instead of deprecated applymap (pandas 2.1+)
     st.dataframe(
         display_df.style
-            .applymap(confidence_color, subset=['Confidence'])
+            .map(confidence_color, subset=['Confidence'])
             .format({'Est. Amount': '£{:,.2f}'}),
         use_container_width=True,
         hide_index=True
