@@ -333,6 +333,51 @@ class TestConstants:
 
 
 # =============================================================================
+# INTEGRATION TESTS
+# =============================================================================
+
+class TestModuleIntegration:
+    """Tests for module integration - verify centralized modules work across app"""
+
+    def test_premium_tables_uses_formatter(self):
+        """Test premium_tables uses centralized Formatter"""
+        from premium_tables import format_currency, format_percent
+        from formatters import Formatter
+
+        # premium_tables.format_currency should use Formatter internally
+        assert format_currency(1234.56) == Formatter.currency(1234.56)
+        assert format_percent(5.5) == Formatter.percent(5.5)
+
+    def test_premium_tables_uses_color_palette(self):
+        """Test premium_tables uses centralized ColorPalette"""
+        from premium_tables import get_category_color
+        from theme_manager import ColorPalette
+
+        # get_category_color should use ColorPalette.category_scheme
+        assert get_category_color('income') == ColorPalette.category_scheme('income')
+        assert get_category_color('growth') == ColorPalette.category_scheme('growth')
+
+    def test_premium_charts_uses_color_palette(self):
+        """Test premium_charts uses centralized ColorPalette"""
+        from premium_charts import CHART_COLORS
+        from theme_manager import ColorPalette
+
+        # CHART_COLORS should use ColorPalette values
+        assert CHART_COLORS['income'] == ColorPalette.CATEGORIES['income']
+        assert CHART_COLORS['success'] == ColorPalette.get('success')
+
+    def test_color_consistency_across_modules(self):
+        """Test colors are consistent across modules"""
+        from premium_tables import get_category_color
+        from premium_charts import CHART_COLORS
+        from theme_manager import ColorPalette
+
+        # Category colors should match
+        assert get_category_color('income')['text'] == ColorPalette.CATEGORY_SCHEMES['income']['text']
+        assert CHART_COLORS['income'] == ColorPalette.CATEGORIES['income']
+
+
+# =============================================================================
 # RUN TESTS
 # =============================================================================
 

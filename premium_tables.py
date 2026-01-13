@@ -15,31 +15,35 @@ import streamlit as st
 import pandas as pd
 from premium_metrics import generate_sparkline_svg
 
+# Import from centralized modules
+from formatters import Formatter
+from theme_manager import ColorPalette
+
 
 # ============================================================================
 # HELPER FUNCTIONS
 # ============================================================================
 
 def format_currency(value: float) -> str:
-    """Format value as GBP currency with proper commas"""
-    if pd.isna(value) or value is None:
-        return "—"
-    if abs(value) >= 1000:
-        return f"£{value:,.0f}"
-    return f"£{value:.2f}"
+    """Format value as GBP currency with proper commas.
+
+    Uses centralized Formatter for consistent formatting across the app.
+    """
+    return Formatter.currency(value)
 
 
 def format_percent(value: float, show_sign: bool = True) -> str:
-    """Format value as percentage with optional sign"""
-    if pd.isna(value) or value is None:
-        return "—"
-    if show_sign:
-        return f"{value:+.1f}%"
-    return f"{value:.1f}%"
+    """Format value as percentage with optional sign.
+
+    Uses centralized Formatter for consistent formatting across the app.
+    """
+    return Formatter.percent(value, show_sign=show_sign)
 
 
 def get_category_color(category: str) -> dict:
-    """Returns color scheme for category badge
+    """Returns color scheme for category badge.
+
+    Uses centralized ColorPalette for consistent colors across the app.
 
     Args:
         category: Category name (income, growth, speculative, or unknown)
@@ -47,13 +51,7 @@ def get_category_color(category: str) -> dict:
     Returns:
         Dictionary with 'bg', 'text', and 'border' color values
     """
-    colors = {
-        'income': {'bg': '#1e3a5f', 'text': '#60a5fa', 'border': '#3b82f6'},
-        'growth': {'bg': '#1a3d2e', 'text': '#4ade80', 'border': '#22c55e'},
-        'speculative': {'bg': '#4a3728', 'text': '#fb923c', 'border': '#f97316'},
-        'unknown': {'bg': '#374151', 'text': '#9ca3af', 'border': '#6b7280'}
-    }
-    return colors.get(category.lower() if category else 'unknown', colors['unknown'])
+    return ColorPalette.category_scheme(category)
 
 
 # ============================================================================

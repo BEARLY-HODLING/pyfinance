@@ -11,31 +11,35 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 
+# Import from centralized color management
+from theme_manager import ColorPalette
+
 # ============================================================================
 # CHART COLOR PALETTE
 # ============================================================================
 
+# Build CHART_COLORS using centralized ColorPalette
 CHART_COLORS = {
-    # Primary colors
-    'primary': '#3498db',
-    'secondary': '#9b59b6',
-    'success': '#2ecc71',
-    'danger': '#e74c3c',
-    'warning': '#f39c12',
-    'info': '#1abc9c',
+    # Primary colors (from ColorPalette.SEMANTIC)
+    'primary': ColorPalette.get('primary'),
+    'secondary': ColorPalette.BASE.get('purple', '#9b59b6'),
+    'success': ColorPalette.get('success'),
+    'danger': ColorPalette.get('danger'),
+    'warning': ColorPalette.get('warning'),
+    'info': ColorPalette.get('info'),
 
-    # Category colors
-    'income': '#27ae60',
-    'growth': '#3498db',
-    'speculative': '#e74c3c',
-    'unknown': '#95a5a6',
+    # Category colors (from ColorPalette.CATEGORIES)
+    'income': ColorPalette.CATEGORIES['income'],
+    'growth': ColorPalette.CATEGORIES['growth'],
+    'speculative': ColorPalette.CATEGORIES['speculative'],
+    'unknown': ColorPalette.CATEGORIES['unknown'],
 
     # Chart-specific
-    'portfolio_line': '#00CC96',
-    'benchmark_line': '#EF553B',
-    'trend_line': '#f39c12',
-    'fill_positive': 'rgba(46, 204, 113, 0.2)',
-    'fill_negative': 'rgba(231, 76, 60, 0.2)',
+    'portfolio_line': ColorPalette.CHART_COLORS[0],  # '#00CC96'
+    'benchmark_line': ColorPalette.CHART_COLORS[1],  # '#EF553B'
+    'trend_line': ColorPalette.get('warning'),
+    'fill_positive': ColorPalette.hex_to_rgba(ColorPalette.get('success'), 0.2),
+    'fill_negative': ColorPalette.hex_to_rgba(ColorPalette.get('danger'), 0.2),
     'grid': 'rgba(255, 255, 255, 0.1)',
 
     # Gradient fills
